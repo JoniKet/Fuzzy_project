@@ -1,7 +1,12 @@
-function new_data = to_categorical(variable)
+function new_data = to_categorical(variable, names)
+
   variable = categorical(variable);
   X = dummyvar(variable);
-  names = categories(variable);
+  
+  if nargin < 2
+    names = categories(variable);
+  end
+  
   dummy_table = array2table(X);
   dummy_table.Properties.VariableNames = names;
   
