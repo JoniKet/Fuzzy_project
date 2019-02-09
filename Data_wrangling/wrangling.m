@@ -2,7 +2,7 @@ clc; clear all; close all;
 
 %Practical assignment data wrangling.
 
-data = readtable('bank-full.csv');
+data = readtable('bank.csv');
 data_new = data;
 
 
@@ -53,32 +53,32 @@ for i = 1:length(jobs)
   end
 end
 
-jobs_dummies = to_categorical(data_new.job,jobs);
+jobs_dummies = to_categorical(data_new.job,jobs,0,'jobUnknown');
 data_new = addvars(data_new,jobs_dummies,'After',data_new.Properties.VariableNames(end)); % now the dataset has dummy for job 
 data_new = removevars(data_new,'job');
 
 
 % Marital
 
-maritals_dummies = to_categorical(data_new.marital);
+maritals_dummies = to_categorical(data_new.marital,[],1,[]);
 data_new = addvars(data_new,maritals_dummies,'After',data_new.Properties.VariableNames(end)); % now the dataset has dummy for marital status
 data_new = removevars(data_new,'marital');
 
 % contact
 
-contacts_dummies = to_categorical(data_new.contact);
+contacts_dummies = to_categorical(data_new.contact,[],1,[]);
 data_new = addvars(data_new,contacts_dummies,'After',data_new.Properties.VariableNames(end)); % now the dataset has dummy for contact method
 data_new = removevars(data_new,'contact');
 
 % last contact month
 
-months_dummies = to_categorical(data_new.month);
+months_dummies = to_categorical(data_new.month,[],1,[]);
 data_new = addvars(data_new,months_dummies,'After',data_new.Properties.VariableNames(end)); % now the dataset has dummy for contact month
 data_new = removevars(data_new,'month');
 
 % poutcome
 
-poutcomes_dummies = to_categorical(data_new.poutcome);
+poutcomes_dummies = to_categorical(data_new.poutcome,[],1,[]);
 data_new = addvars(data_new,poutcomes_dummies,'After',data_new.Properties.VariableNames(end)); % now the dataset has dummy for outcome of previous marketing
 data_new = removevars(data_new,'poutcome');
 
@@ -101,9 +101,35 @@ for i = 1:length(binvars)
   end
 end
 
+%% handling the pdays variable
 
+%Since pdays contains 'categorical values' aka -1 and other number values,
+%it has to be transformed somehow. Fuzzy trapezoidal numbers are used to
+%define how long the time that passed by after the client was contacted
+%from a previous campaign
+histogram(data.pdays)
+neverContactedF = [-100 -100 -1 -0.1]; % Taking the -1 never contacted values to this crisp set
+recentlyContactedF = [0 50 100 150];
+sometimeAgoF = [100 150 200 250];
+aWhileAgoF = [200 250 300 350];
+longTimeAgoF = [300 350 1000 1000];
 
+nC = zeros(length(data_new.pdays),1); rC = zeros(length(data_new.pdays),1); sometimeAgo = zeros(length(data_new.pdays),1); aWhileAgo = zeros(length(data_new.pdays),1); 
+longTimeAgo = zeros(length(data_new.pdays),1);
 
+for i = 1:length(data.pdays)
+  nC(i) = trapf2(data.pdays(i),neverContactedF);
+  rC(i) = trapf2(data.pdays(i),recentlyContactedF);
+  sometimeAgo(i) = trapf2(data.pdays(i),sometimeAgoF);
+  aWhileAgo(i) = trapf2(data.pdays(i),aWhileAgoF);
+  longTimeAgo(i) = trapf2(data.pdays(i),longTimeAgoF);
+end
+
+%saving the membership values to the dataset
+data_new = addvars(data_new,nC,rC,sometimeAgo,aWhileAgo,longTimeAgo,'before','age','NewVariableName',{'neverContacted','recentlyContacted' ...
+  ,'sometimeAgoContacted','aWhileAgoContacted','longTimeAgoContacted'},'before','y');
+
+data_new = removevars(data_new,'pdays');
 %% Removing NaN and imputating
 
 data_new = splitvars(data_new);
@@ -111,10 +137,27 @@ temp = table2array(data_new);
 temp2 = knnimpute(temp);
 data_new = array2table(temp2,'VariableNames',data_new.Properties.VariableNames);
 
-%% normalizing the variables
+
+%% Normalization of the parameters using min max
+
+data_new.age = minmaxnorm(data_new.age,0,1);
+data_new.balance = minmaxnorm(data_new.balance,0,1);
+data_new.day = minmaxnorm(data_new.day,0,1);
+data_new.duration = minmaxnorm(data_new.duration,0,1);
+data_new.previous = minmaxnorm(data_new.previous,0,1);
+data_new.campaign = minmaxnorm(data_new.campaign,0,1);
 
 
+%% Dividing data into train and test set
 
+trainlength = round(length(data_new.y)*0.7);
+data_train = data_new(1:trainlength,:);
+data_test = data_new(trainlength:end,:);
 
+% saving the data_train and data_test
 
+% writetable(data_train,'data_train_S.csv') %smaller dataset
+% writetable(data_train,'data_test_S.csv')
 
+writetable(data_train,'data_train_S.csv') %bigger dataset
+writetable(data_test,'data_test_S.csv')
