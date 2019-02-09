@@ -140,12 +140,12 @@ data_new = array2table(temp2,'VariableNames',data_new.Properties.VariableNames);
 
 %% Normalization of the parameters using min max
 
-data_new.age = minmaxnorm(data_new.age,0,1);
-data_new.balance = minmaxnorm(data_new.balance,0,1);
-data_new.day = minmaxnorm(data_new.day,0,1);
-data_new.duration = minmaxnorm(data_new.duration,0,1);
-data_new.previous = minmaxnorm(data_new.previous,0,1);
-data_new.campaign = minmaxnorm(data_new.campaign,0,1);
+% data_new.age = minmaxnorm(data_new.age,0,1);
+% data_new.balance = minmaxnorm(data_new.balance,0,1);
+% data_new.day = minmaxnorm(data_new.day,0,1);
+% data_new.duration = minmaxnorm(data_new.duration,0,1);
+% data_new.previous = minmaxnorm(data_new.previous,0,1);
+% data_new.campaign = minmaxnorm(data_new.campaign,0,1);
 
 
 %% Dividing data into train and test set
@@ -156,8 +156,8 @@ data_test = data_new(trainlength:end,:);
 
 % saving the data_train and data_test
 
-% writetable(data_train,'data_train_S.csv') %smaller dataset
-% writetable(data_train,'data_test_S.csv')
-
-writetable(data_train,'data_train_S.csv') %bigger dataset
+writetable(data_train,'data_train_S.csv') %smaller dataset
 writetable(data_test,'data_test_S.csv')
+% 
+% writetable(data_train,'data_train.csv') %bigger dataset
+% writetable(data_test,'data_test.csv')

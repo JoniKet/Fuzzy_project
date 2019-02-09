@@ -1,7 +1,7 @@
 % Fuzzy principal component analysis for the practical assignment dataset
-clear all; close all; clc;
-data_train = readtable('data_train_S.csv');
-data_test = readtable('data_test_S.csv');
+clear all; close all; clc; warning off;
+data_train = readtable('data_train.csv');
+data_test = readtable('data_test.csv');
 xlabels = data_train.Properties.VariableNames(1:end-1);
 
 
@@ -16,8 +16,14 @@ Ytest = data_test_table(:,end)+1;
 %% PCA  AND FPCA
 
 [PC,w]=frpca(data_train_table(:,1:end-1),47);
-[t,p,r2] = pca(data_train_table(:,1:end-1));
+[t,p,r2] = pca(scale(data_train_table(:,1:end-1)));
 
+figure(1)
+title('R^2 graph')
+hold on
+plot(1:47,r2)
+plot(1:47,r2,'o')
+hold off
 
 Xtrain_F_PCA = PC(:,1:end);
 Xtrain_PCA = t(:,1:end);
@@ -32,20 +38,23 @@ Xtest_PCA = Xtest*p;
 
 % Using fuzzy PCA
 
-[Y1,MEMS1,HITS1] = fknn(Xtrain_F_PCA, Ytrain, Xtest_F_PCA, Ytest, 1, 0,1); 
-[acc,sen,spe] = accSenSpeCalc(Y1,Ytest);
+[Y1,MEMS1,HITS1] = fknn(Xtrain_F_PCA, Ytrain, Xtest_F_PCA, Ytest, 1:10, 0,1);
+[value,idx] = max(HITS1) % taking the index value which highest acc 3
+[acc,sen,spe] = accSenSpeCalc(Y1(:,idx),Ytest); 
 fprintf('FUZZY PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 
 % Using normal PCA with fuzzy K-nearest neighbours
 [Y2,MEMS2,HITS2] = fknn(Xtrain_PCA, Ytrain, Xtest_PCA, Ytest,1:10, 0,1); 
-[acc,sen,spe] = accSenSpeCalc(Y2,Ytest);
+[value,idx] = max(HITS2) % taking the index value which highest acc 8
+[acc,sen,spe] = accSenSpeCalc(Y2(:,idx),Ytest);
 fprintf('NORMAL PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 
 % using fuzzy k-nearest neighbours without PCA
 [Y3,MEMS3,HITS3] = fknn(Xtrain, Ytrain, Xtest, Ytest,1:10, 0,1); 
-[acc,sen,spe] = accSenSpeCalc(Y3,Ytest);
+[value,idx] = max(HITS3) % taking the index value which highest acc 8
+[acc,sen,spe] = accSenSpeCalc(Y3(:,idx),Ytest);
 fprintf('NO PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 %% non fuzzy K-nn 
@@ -137,7 +146,7 @@ for i = 1:length(label)
 end
 
 [acc,sen,spe] = accSenSpeCalc(label,Ytrain);
-fprintf('Simple linear regression (PCA) Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
+fprintf('Simple linear regression (PCA) TRAIN SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 
 %test set
@@ -151,7 +160,7 @@ for i = 1:length(label)
 end
 
 [acc,sen,spe] = accSenSpeCalc(label,Ytest);
-fprintf('Simple linear regression (PCA) Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
+fprintf('Simple linear regression (PCA) TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 
 % Using FPCA xdata
@@ -166,7 +175,7 @@ for i = 1:length(label)
   end
 end
 [acc,sen,spe] = accSenSpeCalc(label,Ytrain);
-fprintf('Simple linear regression (FPCA) Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
+fprintf('Simple linear regression (FPCA) TRAIN SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 
 %test set
@@ -180,7 +189,7 @@ for i = 1:length(label)
 end
 
 [acc,sen,spe] = accSenSpeCalc(label,Ytest);
-fprintf('Simple linear regression (FPCA) Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
+fprintf('Simple linear regression (FPCA) TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 
 
