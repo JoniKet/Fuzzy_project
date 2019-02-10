@@ -44,33 +44,27 @@ Xtest_PCA = Xtest*p;
 
 %% fuzzy k-nearest neigbours
 
-sen(1) = 0; acc(1) = 0; spe(1) = 0; index = 1;
+
 % Using fuzzy PCA
-[Y1,MEMS1,HITS1] = fknn(Xtrain_F_PCA, Ytrain, Xtest_F_PCA, Ytest, 1:10, 0,1);
-for i = 1:10 % choosing which k value produces highest sensitivity
-  [acc(i),sen(i),spe(i)] = accSenSpeCalc(Y1(:,i),Ytest); 
-  [temp,index] = max(sen)
+for i = 1:10
+  [Y1,MEMS1,HITS1] = fknn(Xtrain_F_PCA, Ytrain, Xtest_F_PCA, Ytest, 1:10, 0,1);
+  [acc,sen(i),spe] = accSenSpeCalc(Y1(:,idx),Ytest); 
+  if sen(i) > sen(i-1)
+  fprintf('FUZZY PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 end
-fprintf('FUZZY PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc(index),sen(index),spe(index))
-
-
 
 % Using normal PCA with fuzzy K-nearest neighbours
 [Y2,MEMS2,HITS2] = fknn(Xtrain_PCA, Ytrain, Xtest_PCA, Ytest,1:10, 0,1); 
-for i = 1:10 % choosing which k value produces highest sensitivity
-  [acc(i),sen(i),spe(i)] = accSenSpeCalc(Y2(:,i),Ytest); 
-  [temp,index] = max(sen)
-end
-fprintf('NORMAL PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc(index),sen(index),spe(index))
+[value,idx] = max(HITS2) % taking the index value which highest acc 8
+[acc,sen,spe] = accSenSpeCalc(Y2(:,idx),Ytest);
+fprintf('NORMAL PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 
 % using fuzzy k-nearest neighbours without PCA
 [Y3,MEMS3,HITS3] = fknn(Xtrain, Ytrain, Xtest, Ytest,1:10, 0,1); 
-for i = 1:10 % choosing which k value produces highest sensitivity
-  [acc(i),sen(i),spe(i)] = accSenSpeCalc(Y3(:,i),Ytest); 
-  [temp,index] = max(sen)
-end
-fprintf('NO PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc(index),sen(index),spe(index))
+[value,idx] = max(HITS3) % taking the index value which highest acc 8
+[acc,sen,spe] = accSenSpeCalc(Y3(:,idx),Ytest);
+fprintf('NO PCA & FUZZY K-NN TEST SET Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc,sen,spe)
 
 %% non fuzzy K-nn 
 

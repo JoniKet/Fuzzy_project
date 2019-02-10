@@ -14,10 +14,16 @@ test[4:10] = scale(test[4:10])
 # install.packages('e1071')
 library(e1071)
 classifier = svm(formula = y ~ .,
-                 data = train,
-                 type = 'C-classification',
-                 kernel = 'linear',
-                 scale = FALSE)
+              data = train,
+              type = 'C-classification',
+              kernel = 'radial',
+              scale = FALSE,
+              cost = 0.5
+              )
+
+
+
+
 
 # Predicting the Test set results
 y_pred = predict(classifier, newdata = test)
