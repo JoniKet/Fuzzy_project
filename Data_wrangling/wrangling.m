@@ -2,7 +2,7 @@ clc; clear all; close all;
 
 %Practical assignment data wrangling.
 
-data = readtable('bank.csv');
+data = readtable('bank-full.csv');
 data_new = data;
 
 
@@ -155,9 +155,25 @@ data_train = data_new(1:trainlength,:);
 data_test = data_new(trainlength:end,:);
 
 % saving the data_train and data_test
+if length(data_new.y) < 5000
+  writetable(data_train,'data_train_S.csv') %smaller dataset
+  writetable(data_test,'data_test_S.csv')
+else
+  writetable(data_train,'data_train.csv') %bigger dataset
+  writetable(data_test,'data_test.csv')
+end
 
-writetable(data_train,'data_train_S.csv') %smaller dataset
-writetable(data_test,'data_test_S.csv')
-% 
-% writetable(data_train,'data_train.csv') %bigger dataset
-% writetable(data_test,'data_test.csv')
+
+
+% Saving also the whole dataset for cross validation purposes
+if length(data_new.y) < 5000
+  writetable(data_new,'data_whole_S.csv')
+else
+  writetable(data_new,'data_whole.csv')
+end
+
+
+
+
+% EOF
+

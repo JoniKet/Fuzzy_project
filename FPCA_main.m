@@ -20,7 +20,7 @@ Ytest = data_test_table(:,end)+1;
 % sensitivity.
 
 [acc,sen,spe] = accSenSpeCalc(ones(length(Ytrain),1),Ytrain);
-
+fprintf('BASELINE RESULTS Accuracy: %f  \n  Sensitivity: %f   \n Specificity: %f  \n',acc(index),sen(index),spe(index))
 
 %% PCA  AND FPCA
 
