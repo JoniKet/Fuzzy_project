@@ -1,4 +1,4 @@
-% Fuzzy data analysis practical assignment FKNN CROSS PCA
+% Fuzzy data analysis practical assignment KNN CROSS PCA
 
 clear all
 close all
@@ -77,7 +77,7 @@ for k = 25:1:33
      test_labels=data(test_ind,c); %Class labels for testing set
      train_labels=data(train_ind,c); %Class labels for training set
      [y,mem, numhits] = fknn(train,...
-         train_labels, test,test_labels, K,0,1);
+         train_labels, test,test_labels, K,0,'false');
   %    results=numhits/length(test_labels);
 
      for l = 1:max(K) % choosing which k value produces highest sensitivity
@@ -164,7 +164,7 @@ train_data_y = train_data_y +1;
 test_data_y = test_data_y +1;
 
 [y2,mem, numhits] = fknn(train_data(:,1:varArray(idx)),...
-         train_data_y(:,1), test_data(:,1:varArray(idx)), test_data_y(:,1),kArray(idx),0,1);
+         train_data_y(:,1), test_data(:,1:varArray(idx)), test_data_y(:,1),kArray(idx),0,'false');
 
        
 

@@ -14,5 +14,5 @@ function [acc,sen,spe] = accSenSpeCalc(predicted,actual)
     end
   end
   acc = (tp+tn)/(tp+tn+fp+fn);
-  sen = tp/(tp+fn);
+  sen = tp/(tp+fn); % found subscriber amount / (found subscriber amount + not found subscriber amount)
   spe = tn/(tn+fp);

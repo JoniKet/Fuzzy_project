@@ -5,30 +5,20 @@ close all
 clc;
 warning off
 
-data = readtable('data_whole_S.csv');
+data = readtable('data_whole.csv');
 data_new = table2array(data);
 
 
 %% WARNING 
 
-% IT IS NOT GOOD PRACTISE to do PCA for the whole dataset. However due to
-% limitations in computing power, the PCA is done once for the whole
+% IT IS NOT GOOD PRACTISE to do FPCA for the whole dataset. However due to
+% limitations in computing power, the FPCA is done once for the whole
 % dataset instead of calculating weights every time in the cross validation
 % loop. 
 
-%% PCA
+%% NO pca in this method
+% [PC,w]=frpca(data_new(:,1:end-1),47);
 
-[t,p,r2] = pca(scale(data_new(:,1:end-1)));
-
-figure(1)
-title('R^2 graph')
-hold on
-plot(1:47,r2)
-plot(1:47,r2,'o')
-xlabel('Number of parameters included');
-ylabel('Variability in the data explained');
-grid on;
-hold off
 
 
 
@@ -36,10 +26,10 @@ hold off
 %% FKNN
 N=50; % How many times random division to training set and testing set is done
 K=[1:5]; % numbers of k-nn to test
-MeansACC = zeros(
+MeansACC = zeros(max(K),20); MeansSEN = zeros(max(K),20); MeansSPE = zeros(max(K),20);
 for k = 20:1:39
 
-  data_new = [t(:,1:k) data_new(:,end)]; % Defines how many variables to include
+  data_new = [data_new(:,1:k) data_new(:,end)]; % Defines how many variables to include
   [rows, columns] = size(data_new);
 
   % sorting the observations with the example script given in exercies. 
@@ -73,7 +63,7 @@ for k = 20:1:39
      test_labels=data(test_ind,c); %Class labels for testing set
      train_labels=data(train_ind,c); %Class labels for training set
      [y,mem, numhits] = fknn(train,...
-         train_labels, test,test_labels, K,0,1);
+         train_labels, test,test_labels, K,0,'false');
   %    results=numhits/length(test_labels);
 
      for i = 1:max(K) % choosing which k value produces highest sensitivity
@@ -147,20 +137,3 @@ hold off
 [value,idx] = max(senArray);
 fprintf('When sensitivity is at max: \nACC: %2.4f \nSEN: %2.4f \nSPE: %2.4f \nK-nn neighbours included: %1.0f \nNum of columns from data: %1.0f' ,...
   accArray(idx),senArray(idx),speArray(idx),kArray(idx),varArray(idx))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

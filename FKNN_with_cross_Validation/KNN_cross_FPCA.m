@@ -1,4 +1,4 @@
-% Fuzzy data analysis practical assignment FKNN CROSS PCA
+% Fuzzy data analysis practical assignment KNN CROSS FPCA
 
 clear all
 close all
@@ -8,32 +8,22 @@ warning off
 data = readtable('data_whole.csv');
 data_new = table2array(data);
 
+
 %% WARNING 
 
-% IT IS NOT GOOD PRACTISE to do PCA for the whole dataset. However due to
-% limitations in computing power, the PCA is done once for the whole
+% IT IS NOT GOOD PRACTISE to do FPCA for the whole dataset. However due to
+% limitations in computing power, the FPCA is done once for the whole
 % dataset instead of calculating weights every time in the cross validation
 % loop. 
 
-%% PCA
+%% FPCA
 
-[t,p,r2] = pca(scale(data_new(:,1:end-1)));
+[t,w]=frpca(scale(data_new(:,1:end-1)),47);
 
 train_data = t(1:round(length(t(:,1))*0.7),:); % dataset that is used for cross validation
 train_data_y = data_new(1:round(length(t(:,1))*0.7),end);
 test_data = t(length(train_data):end,:); % data that is used to test the model with optimal parameters
 test_data_y = data_new(length(train_data):end,end);
-
-figure(1)
-title('R^2 graph')
-hold on
-plot(1:47,r2)
-plot(1:47,r2,'o')
-xlabel('Number of parameters included');
-ylabel('Variability in the data explained');
-grid on;
-hold off
-
 
 
 
@@ -77,7 +67,7 @@ for k = 25:1:33
      test_labels=data(test_ind,c); %Class labels for testing set
      train_labels=data(train_ind,c); %Class labels for training set
      [y,mem, numhits] = fknn(train,...
-         train_labels, test,test_labels, K,0,1);
+         train_labels, test,test_labels, K,0,'false');
   %    results=numhits/length(test_labels);
 
      for l = 1:max(K) % choosing which k value produces highest sensitivity
@@ -164,7 +154,7 @@ train_data_y = train_data_y +1;
 test_data_y = test_data_y +1;
 
 [y2,mem, numhits] = fknn(train_data(:,1:varArray(idx)),...
-         train_data_y(:,1), test_data(:,1:varArray(idx)), test_data_y(:,1),kArray(idx),0,1);
+         train_data_y(:,1), test_data(:,1:varArray(idx)), test_data_y(:,1),kArray(idx),0,'false');
 
        
 
@@ -172,12 +162,3 @@ test_data_y = test_data_y +1;
 
 fprintf('Model performance with optimal parameter (max sensitivity) TEST SET: \nACC: %2.4f \nSEN: %2.4f \nSPE: %2.4f \nK-nn neighbours included: %1.0f \nNum of columns from data: %1.0f' ,...
   acc,sen,spe,kArray(idx),varArray(idx));
-
-
-
-
-
-
-
-
-
