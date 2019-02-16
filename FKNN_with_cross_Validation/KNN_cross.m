@@ -1,4 +1,4 @@
-% Fuzzy data analysis practical assignment
+% Fuzzy data analysis FKNN with cross validation
 
 clear all
 close all
@@ -8,46 +8,39 @@ warning off
 data = readtable('data_whole.csv');
 data_new = table2array(data);
 
+[rows, columns] = size(data_new);
+%% Dividing data into train and test set
+data_new(:,1:end-1) = scale(data_new(:,1:end-1));
 
-%% WARNING 
+train_data = data_new(1:round(rows*0.7),1:end-1);
+train_data_y = data_new(1:round(rows*0.7),end);
+test_data = data_new(round(rows*0.7):end,1:end-1);
+test_data_y = data_new(round(rows*0.7):end,end);
 
-% IT IS NOT GOOD PRACTISE to do FPCA for the whole dataset. However due to
-% limitations in computing power, the FPCA is done once for the whole
-% dataset instead of calculating weights every time in the cross validation
-% loop. 
-
-%% NO pca in this method
-% [PC,w]=frpca(data_new(:,1:end-1),47);
-
-
+%% coding
 
 
 
-%% FKNN
-N=50; % How many times random division to training set and testing set is done
-K=[1:5]; % numbers of k-nn to test
-MeansACC = zeros(max(K),20); MeansSEN = zeros(max(K),20); MeansSPE = zeros(max(K),20);
-for k = 20:1:39
+rn=1/2; %Half of the data to train and half to validate
 
-  data_new = [data_new(:,1:k) data_new(:,end)]; % Defines how many variables to include
-  [rows, columns] = size(data_new);
+N=30; % How many times random division to training set and testing set is done
+K=[1:5];
+accuracy=[]; %Store the classification accuracies
+sensitivity = [];
+specificity = [];
+%Implemented with crossvalidation:
 
-  % sorting the observations with the example script given in exercies. 
-  [data, lc, cs]= init_data(data_new,1:columns-1,columns);
 
-  rn=2/4; %Amount of data to the training set
 
+for k = 25:33
   
+  data_temp = [train_data(:,1:k) train_data_y(:,end)];
+  [rows, columns] = size(data_temp);
   v=columns-1;
   c=columns;
-
-  accuracy=[]; %Store the classification accuracies
-  sensitivity = [];
-  specificity = [];
-  %Implemented with crossvalidation:
-
+  % sorting the observations with the example script given in exercies. 
+  [data, lc, cs]= init_data(data_temp,1:columns-1,columns);
   rn_train=ones(1,length(lc))*rn(1);
-
   for i=1:N %Randomly repeat division to training set and testing set
      train_ind=[];
      for j=1:length(lc) %For each class
@@ -62,30 +55,31 @@ for k = 20:1:39
      train=data(train_ind,1:v); %data for training
      test_labels=data(test_ind,c); %Class labels for testing set
      train_labels=data(train_ind,c); %Class labels for training set
+
      [y,mem, numhits] = fknn(train,...
          train_labels, test,test_labels, K,0,'false');
   %    results=numhits/length(test_labels);
 
-     for i = 1:max(K) % choosing which k value produces highest sensitivity
-        [acc(i),sen(i),spe(i)] = accSenSpeCalc(y(:,i),test_labels); 
+     for l = 1:max(K) % choosing which k value produces highest sensitivity
+        [acc(l),sen(l),spe(l)] = accSenSpeCalc(y(:,l),test_labels); 
      end
      accuracy = [accuracy; acc];
      sensitivity = [sensitivity; sen];
      specificity = [specificity; spe];
+     fprintf('Check %2.0f out of 30 \n',i);
 
   end
-  MeansACC(:,k)=mean(accuracy);    %Mean classification accuracies from 30 repetation rows = number of neighbouts columns = number of variables
+  MeansACC(:,k) = mean(accuracy);    %Mean classification accuracies from 30 repetation rows = number of neighbouts columns = number of variables
   MeansSEN(:,k) = mean(sensitivity);
   MeansSPE(:,k) = mean(specificity);
+  fprintf('Completion %2.0f out of 33 \n',k);
 end
 
 % getting rid of the zero columns
 % 
-MeansACC = MeansACC(:,20:end);
-MeansSEN = MeansSEN(:,20:end);
-MeansSPE = MeansSPE(:,20:end);
-
-%% Plotting and results evaluation
+MeansACC = MeansACC(:,25:end);
+MeansSEN = MeansSEN(:,25:end);
+MeansSPE = MeansSPE(:,25:end);
 
 
 accArray = reshape(MeansACC,[],1);
@@ -93,9 +87,9 @@ senArray = reshape(MeansSEN,[],1);
 speArray = reshape(MeansSPE,[],1);
 varArray = []; kArray = [];
 for i = 1:5
-  varArray = [varArray 20:39];
+  varArray = [varArray 25:33];
 end
-for i = 1:20
+for i = 1:9
   kArray = [kArray 1:5];
 end
 
@@ -135,5 +129,24 @@ grid on;
 hold off
 
 [value,idx] = max(senArray);
-fprintf('When sensitivity is at max: \nACC: %2.4f \nSEN: %2.4f \nSPE: %2.4f \nK-nn neighbours included: %1.0f \nNum of columns from data: %1.0f' ,...
+fprintf('Model performance with optimal parameter (max sensitivity) TRAIN SET: \nACC: %2.4f \nSEN: %2.4f \nSPE: %2.4f \nK-nn neighbours included: %1.0f \nNum of columns from data: %1.0f \n' ,...
   accArray(idx),senArray(idx),speArray(idx),kArray(idx),varArray(idx))
+
+
+%% Using optimal parameters in the test data
+
+% in order to use the function +1 has to be added to each row of
+% train_data_y and test_data_y
+
+train_data_y = train_data_y +1;
+test_data_y = test_data_y +1;
+
+[y2,mem, numhits] = fknn(train_data(:,1:varArray(idx)),...
+         train_data_y(:,1), test_data(:,1:varArray(idx)), test_data_y(:,1),kArray(idx),0,'false');
+
+       
+
+[acc,sen,spe] = accSenSpeCalc(y2,test_data_y(:,1));
+
+fprintf('Model performance with optimal parameter (max sensitivity) TEST SET: \nACC: %2.4f \nSEN: %2.4f \nSPE: %2.4f \nK-nn neighbours included: %1.0f \nNum of columns from data: %1.0f' ,...
+  acc,sen,spe,kArray(idx),varArray(idx));
