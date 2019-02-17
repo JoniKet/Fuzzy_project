@@ -5,8 +5,10 @@ close all
 clc;
 warning off
 
-data = readtable('data_whole.csv');
+data = readtable('data_whole_S.csv');
 data_new = table2array(data);
+
+data_new = data_new(1:1000,:);
 
 [rows, columns] = size(data_new);
 %% Dividing data into train and test set
