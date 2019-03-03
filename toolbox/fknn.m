@@ -48,7 +48,7 @@ num_train = size(data,1);
 num_test  = size(test,1);
 
 % scaling factor for fuzzy weights. see [1] for details
-%m = 2.0;
+% m = 2.0;
 m=2.5;
 % convert class labels to unary membership vectors (of 1s and 0s)
 max_class = max(labels);

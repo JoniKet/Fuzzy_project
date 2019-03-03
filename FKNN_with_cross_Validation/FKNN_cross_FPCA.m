@@ -5,7 +5,7 @@ close all
 clc;
 warning off
 
-data = readtable('data_whole.csv'); % picking the dataset. Data_whole for the bigger dataset and Data_whole_S for the reduced data set
+data = readtable('data_whole_S.csv'); % picking the dataset. Data_whole for the bigger dataset and Data_whole_S for the reduced data set
 
 % data_whole_s is used for methodology and error testing purposes
 data_new = table2array(data);
@@ -30,8 +30,8 @@ test_data_y = data_new(length(train_data):end,end);
 
 
 %% FKNN PARAMETERS
-N=30; % How many times random division to training set and testing set is done
-K=[1:5]; % numbers of k-nn to test
+N=50; % How many times random division to training set and testing set is done
+K=[1:15]; % numbers of k-nn to test
 rn = 1/2; % amount of data in validation and split set
 mink = 2; % minumum amount of variables to include
 maxk = 47; % max amount of variables to include
