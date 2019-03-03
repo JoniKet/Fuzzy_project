@@ -27,19 +27,24 @@ test_data_y = data_new(length(train_data):end,end);
 
 
 
-%% FKNN
+%% KNN PARAMETERS
 N=30; % How many times random division to training set and testing set is done
 K=[1:5]; % numbers of k-nn to test
+rn = 1/2; % amount of data in validation and train set
+mink = 20; % minumum amount of variables to include
+maxk = 47; % max amount of variables to include
+
+
+%% KNN LOOP
+
 MeansACC = []; MeansSEN = []; MeansSPE = [];
-for k = 25:1:33
+for k = mink:1:maxk
 
   data_new = [train_data(:,1:k) train_data_y]; % Defines how many variables to include
   [rows, columns] = size(data_new);
 
   % sorting the observations with the example script given in exercies. 
   [data, lc, cs]= init_data(data_new,1:columns-1,columns);
-
-  rn=2/4; %Amount of data to the training set
 
   
   v=columns-1;
@@ -76,20 +81,20 @@ for k = 25:1:33
      accuracy = [accuracy; acc];
      sensitivity = [sensitivity; sen];
      specificity = [specificity; spe];
-     fprintf('Check %2.0f out of 30 \n',i);
+     fprintf('Check %2.0f out of %2.0f \n',i,N);
 
   end
   MeansACC(:,k) = mean(accuracy);    %Mean classification accuracies from 30 repetation rows = number of neighbouts columns = number of variables
   MeansSEN(:,k) = mean(sensitivity);
   MeansSPE(:,k) = mean(specificity);
-  fprintf('Completion %2.0f out of 33 \n',k);
+  fprintf('Completion %2.0f out of %2.0f \n',k,maxk);
 end
 
 % getting rid of the zero columns
 % 
-MeansACC = MeansACC(:,25:end);
-MeansSEN = MeansSEN(:,25:end);
-MeansSPE = MeansSPE(:,25:end);
+MeansACC = MeansACC(:,mink:end);
+MeansSEN = MeansSEN(:,mink:end);
+MeansSPE = MeansSPE(:,mink:end);
 
 %% Plotting and results evaluation
 
@@ -98,11 +103,12 @@ accArray = reshape(MeansACC,[],1);
 senArray = reshape(MeansSEN,[],1);
 speArray = reshape(MeansSPE,[],1);
 varArray = []; kArray = [];
-for i = 1:5
-  varArray = [varArray 25:33];
+
+for i = 1:max(K) % used for gridplot
+  varArray = [varArray mink:maxk];
 end
-for i = 1:9
-  kArray = [kArray 1:5];
+for i = 1:(maxk-mink+1) % used for gridplot
+  kArray = [kArray 1:max(K)];
 end
 
 % plotting ACC
